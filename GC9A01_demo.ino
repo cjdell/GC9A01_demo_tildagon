@@ -2,9 +2,11 @@
 
 #include "GC9A01.h"
 
-#define RES 8
-#define DC  9
-#define CS  10
+#define RES 0
+#define DC  2
+#define CS  1
+
+SPIClass _SPI = SPIClass(1);
 
 void GC9A01_set_reset(uint8_t val) {
     digitalWrite(RES, val);
@@ -20,7 +22,7 @@ void GC9A01_set_chip_select(uint8_t val) {
 
 void GC9A01_spi_tx(uint8_t *data, size_t len) {
     while (len--) {
-        SPI.transfer(*data);
+        _SPI.transfer(*data);
         data++;
     }
 }
@@ -30,41 +32,62 @@ void GC9A01_delay(uint16_t ms) {
 }
 
 void setup() {
+    Serial.begin(115200);
     
     pinMode(RES, OUTPUT);
     pinMode(DC, OUTPUT);
     pinMode(CS, OUTPUT);
-    SPI.begin();
+    
+    _SPI.begin(8, -1, 7);
 
+    _SPI.setFrequency(40000000);
+    
     GC9A01_init();
     struct GC9A01_frame frame = {{0,0},{239,239}};
     GC9A01_set_frame(frame);
-    
 }
 
 void loop() {
+
+    Serial.println(1);
 
     uint8_t color[3];
 
     // Triangle
     color[0] = 0xFF;
     color[1] = 0xFF;
-    for (int x = 0; x < 240; x++) {
-        for (int y = 0; y < 240; y++) {
+
+    for (int y = 0; y < 240; y++) {
+        // Experimenting with making this faster by using a line buffer
+        uint8_t line[240 * 3];
+
+        for (int x = 0; x < 240; x++) {
+            color[x * 3 + 0] = 0xFF;
+            color[x * 3 + 1] = 0xFF;
+
             if (x < y) {
-                color[2] = 0xFF;
+                //color[2] = 0xFF;
+                color[x * 3 + 2] = 0xFF;
             } else {
-                color[2] = 0x00;
+                color[x * 3 + 2] = 0x00;
             }
-            if (x == 0 && y == 0) {
-                GC9A01_write(color, sizeof(color));
-            } else {
-                GC9A01_write_continue(color, sizeof(color));
-            }
+            // if (x == 0 && y == 0) {
+            //     GC9A01_write(color, sizeof(color));
+            // } else {
+            //     GC9A01_write_continue(color, sizeof(color));
+            // }
+        }
+        
+        if (y == 0) {
+            GC9A01_write(line, 240 * 3);
+        } else {
+            GC9A01_write_continue(line, 240 * 3);
         }
     }
 
     delay(1000);
+
+    Serial.println(2);
 
     // Rainbow
     float frequency = 0.026;
@@ -82,6 +105,8 @@ void loop() {
     }
 
     delay(1000);
+
+    Serial.println(2);
 
     // Checkerboard
     for (int x = 0; x < 240; x++) {
@@ -105,6 +130,8 @@ void loop() {
 
     delay(1000);
 
+    Serial.println(3);
+
     // Swiss flag
     color[0] = 0xFF;
     for (int x = 0; x < 240; x++) {
@@ -127,4 +154,5 @@ void loop() {
 
     delay(1000);
 
+    Serial.println(4);
 }
