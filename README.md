@@ -1,18 +1,18 @@
-# Arduino GC9A01 Display Driver Demo
+# Arduino GC9A01 Display Driver Demo for EMF Camp Badge 2024 (Tildagon)
 
 Simple sketch using the GC9A01 LCD display driver with a 240x240 round display to show some test patterns in 18-bit color mode over SPI. This is deliberately simple and unoptimised example code.
 
-![](demo.gif)
+![](demo.jpg)
 
 ### Pinout
 
-| GC9A01 | Arduino |
+| GC9A01 | ESP32-S3 |
 |:------:|:-------:|
-| SCL | SCK |
-| SDA | MOSI |
-| RES | 8 |
-| DC | 9 |
-| CS | 10 |
+| SCL | 8 |
+| SDA | 7 |
+| RES | NC |
+| DC | 2 |
+| CS | 1 |
 
 ### Useful documentation
 
